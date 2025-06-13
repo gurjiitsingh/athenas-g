@@ -28,7 +28,7 @@ const Form = () => {
   
       formData.append("name", data.name);
       formData.append("sortOrder", data.sortOrder!);
-      formData.append("desc", data.desc);
+      formData.append("desc", data.desc ?? "");
       formData.append("isFeatured", data.isFeatured!);
     //  formData.append("slug", data.slug!);
        if(data.image[0] === undefined){
