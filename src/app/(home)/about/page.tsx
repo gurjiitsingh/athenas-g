@@ -8,7 +8,7 @@ export default function Page() {
           <div className="flex flex-col ">
             <h1 className="text-[2rem] mb-9 text-[#181818]">Über Uns</h1>
             <h2 className="text-[1.6rem] font-semibold  mb-0">
-              Willkommen bei Masala - Taste of India!
+              Willkommen bei Athenas Grill!
             </h2>
             <p className="text-[.9rem] text-[#222]">
               Wir bringen die authentischen Aromen der indischen Küche direkt
@@ -38,7 +38,7 @@ export default function Page() {
               Geschmack Indiens.
             </p>
             <h3 className="text-[1.1rem] font-semibold mt-6  mb-0">
-              Masala - Taste of India
+              Athenas Grill
             </h3>
             <p className="text-[.9rem] text-[#222]">
               Gifhorn: Braunschweiger Straße 93, 38518 Gifhorn
