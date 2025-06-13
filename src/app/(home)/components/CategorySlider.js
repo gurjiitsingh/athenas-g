@@ -105,7 +105,7 @@ export default function CategorySlider() {
             <div key={category.id} className="mx-2">
               <button onClick={() => setProductCategoryIdG(category.id)}>
                 <div className="w-[100px]">
-                  <div className="flex flex-col gap-1">
+                  <div className="flex flex-col gap-1 bg-[#edb17f] h-[150px] rounded-lg">
                     <div
                       className={`${
                         displayCategory === category.id

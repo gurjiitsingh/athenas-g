@@ -9,7 +9,7 @@ export default function Footer() {
     <footer className="relative bg-[#eba363] pt-12 -mb-20">
       <div className="container mx-auto">
         <div className="flex flex-col md:flex-row justify-between gap-8 md:gap-1">
-          <div className="flex items-center gap-1 w-full h-fit border border-amber-50 p-1 mx-1 rounded-2xl bg-amber-200">
+          <div className="flex items-center gap-1 w-fit h-fit border border-amber-50 p-1 mx-1 rounded-2xl bg-[#92cda8]">
             <div className="flex items-center justify-start rounded-full">
               <Link href="/">
                 <img className="h-12 md:h-12" src="/logo.png" alt={allText.logoAlt} />

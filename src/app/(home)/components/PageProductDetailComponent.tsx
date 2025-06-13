@@ -65,13 +65,13 @@ export default function PageProductDetailComponent({
 
   //common code end
   return (
-    <div className="w-full     bg-zinc-50 shadow-lg flex flex-row   rounded-2xl items-center">
+    <div className="w-full h-[200px]    bg-zinc-50 shadow-lg flex flex-row   rounded-lg items-center">
     
 
       <div className="w-full flex flex-col p-3 justify-between ">
         <div className="w-full flex-col gap-4 justify-between ">
           <div className="w-full flex gap-1 mb-2 justify-between ">
-            <div className="flex items-center justify-start text-nowrap font-semibold text-center px-2 py-1  min-w-[180px]  rounded-3xl  text-slate-600">
+            <div className=" flex items-start justify-start text-wrap font-semibold text-left    min-w-[180px] min-h-[50px]  rounded-3xl  text-slate-600">
               {productCategoryIdG !== "" && <>{product.sortOrder}.&nbsp;</>}
               {product.name}
             </div>
@@ -141,12 +141,12 @@ export default function PageProductDetailComponent({
       </div>
 
 
-        <div className="rounded-lg bg-slate-100 p-1 flex items-center justify-center w-[120px] h-[120px]   overflow-hidden">
+        <div className="rounded-tr-lg rounded-br-lg bg-slate-200  flex items-center justify-center h-full   overflow-hidden">
         {product.image && (
           <img
             src={product.image}
             alt={product.name}
-            className="h-[110px]  md:h-[110px]"
+            className="w-full h-full object-cover"
           />
         )}
       </div>
