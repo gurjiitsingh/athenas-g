@@ -63,9 +63,9 @@ export default function PageProductDetailComponent({
     return !(berlinHour >= 11 && berlinHour < 16);
   })();
 
-  //common code end
+  //common code end  
   return (
-    <div className="w-full h-[200px]    bg-zinc-50 shadow-lg flex flex-row   rounded-lg items-center">
+    <div className="border-yellow-300 border-2 w-full h-[200px]    bg-[#ebc59d] opacity-75  shadow-lg flex flex-row   rounded-lg items-center">
     
 
       <div className="w-full flex flex-col p-3 justify-between ">
@@ -83,13 +83,13 @@ export default function PageProductDetailComponent({
             onClick={() =>
               alert(product.productDesc ?? "Keine Beschreibung verfügbar")
             }
-            className="flex items-start text-sm px-3  text-slate-500 font-extralight text-left max-w-fit md:max-w-[400px] min-h-[70px] overflow-hidden"
+            className="flex items-start text-sm px-3  text-slate-700 font-extralight text-left max-w-fit md:max-w-[400px] min-h-[70px] overflow-hidden"
           >
             {product.productDesc}
           </button>
 
           {!product.flavors && (
-            <div className="flex text-slate-500 items-center  justify-between pt-1 pl-2 pr-1  rounded-3xl">
+            <div className="flex text-slate-600 items-center  justify-between pt-1 pl-2 pr-1  rounded-3xl">
               <div>Pack</div>
               {/* common code start */}
               {product.discountPrice !== undefined &&
