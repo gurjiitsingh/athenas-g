@@ -17,9 +17,9 @@ export default function DatenschutzPage() {
 
 
       <p className="mb-4">
-        Bei <strong>Athenas Grill</strong> (
-        <a href="https://www.athenasgrill.de" className="text-blue-600 underline">
-          www.athenasgrill.de
+        Bei <strong>Masala Taste of India</strong> (
+        <a href="https://www.masala-gf.de" className="text-blue-600 underline">
+          www.masala-gf.de
         </a>
         ) nehmen wir den Schutz Ihrer persönlichen Daten sehr ernst. Diese Datenschutzerklärung erläutert, welche Daten wir erfassen und wie wir sie verwenden.
       </p>
@@ -68,8 +68,8 @@ export default function DatenschutzPage() {
       </p>
       <p className="mb-4">
         📧{' '}
-        <a href="mailto:info@athenasgrill.de" className="text-blue-600 underline">
-          info@athenasgrill.de
+        <a href="mailto:info@masala-gf.de" className="text-blue-600 underline">
+          info@masala-gf.de
         </a>
       </p>
 
@@ -78,8 +78,8 @@ export default function DatenschutzPage() {
         Bei Fragen zum Datenschutz stehen wir Ihnen jederzeit zur Verfügung:
         <br />
         📧{' '}
-        <a href="mailto:info@athenasgrill.de" className="text-blue-600 underline">
-          info@athenasgrill.de
+        <a href="mailto:info@masala-gf.de" className="text-blue-600 underline">
+          info@masala-gf.de
         </a>
       </p>
 

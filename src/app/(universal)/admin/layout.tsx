@@ -5,9 +5,12 @@ import React from "react";
 import "@/app/globals.css";
 //import { Metadata } from "next";
 
-import { SiteProvider } from "@/SiteContext/SiteProvider";
+
 import SideBarBase from "./SideBarBase";
 import { ButtonProvider } from "@/ButtonContext/ButtonProvider";
+import { LanguageProvider } from "@/store/LanguageContext";
+import { Toaster } from "react-hot-toast";
+import { Providers } from "@/app/Providers";
 
 // export const metadata = {
 //   title: "Next.js",
@@ -22,7 +25,8 @@ export default function RootLayout({
   return (
     <html lang="de" translate="no">
       <body>
-        <SiteProvider>
+        <Providers>
+       
         <ButtonProvider>
           <main className="relative flex text-slate-600">
             <SideBarBase />
@@ -32,12 +36,48 @@ export default function RootLayout({
                 <Header />
               </div>
               <div className="w-full flex flex-col px-5 pt-17  bg-slate-100 h-screen ">
+             <LanguageProvider>
                 {children}
+                </LanguageProvider>
               </div>
             </div>
           </main>
           </ButtonProvider>
-        </SiteProvider>
+      
+           <Toaster
+            position="top-center"
+            containerStyle={{
+              top: "30%",
+            }}
+            toastOptions={{
+              style: {
+                borderRadius: "10px",
+                padding: "12px 16px",
+                background: "#1e293b", // slate-800
+                color: "#f8fafc", // slate-50
+              },
+              success: {
+                style: {
+                  background: "#10b981", // emerald-500
+                  color: "#ffffff",
+                },
+              },
+              error: {
+                style: {
+                  background: "#ef4444", // red-500
+                  color: "#ffffff",
+                },
+              },
+              loading: {
+                style: {
+                  background: "#f59e0b", // amber-500
+                  color: "#ffffff",
+                },
+              },
+            }}
+            reverseOrder={false}
+          />
+          </Providers>
       </body>
     </html>
   );

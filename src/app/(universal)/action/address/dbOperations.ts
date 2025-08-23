@@ -1,289 +1,181 @@
-"use server";
+'use server';
 
-import { db } from "@/lib/firebaseConfig";
-import { addressResT, addressResType, addressSchima, addressSchimaCheckout } from "@/lib/types/addressType"; //, TaddressSchema
+import { adminDb } from "@/lib/firebaseAdmin";
 import {
-  addDoc,
-  collection,
-  doc,
-  getDoc,
-  getDocs,
-  query,
-  updateDoc,
-  where,
-} from "@firebase/firestore";
+  addressResT,
+  addressResType,
+  addressSchima,
+  addressSchimaCheckout,
+  addressWithId,
+} from "@/lib/types/addressType";
+import { FieldValue, Timestamp } from "firebase-admin/firestore";
 
+// ✅ Add new address (basic)
 export async function addNewAddress(formData: FormData) {
-  const name = formData.get("name");
-  const userId = formData.get("userId");
-  const mobNo = formData.get("mobNo");
-  const addressLine1 = formData.get("addressLine1");
-  const addressLine2 = formData.get("addressLine2");
-  const city = formData.get("city");
-  const state = formData.get("state");
-  const zipCode = formData.get("zipCode");
-
-  const recievedData = {
-    name,
-    userId,
-    mobNo,
-    addressLine1,
-    addressLine2,
-    city,
-    state,
-    zipCode,
+  const receivedData = {
+    name: formData.get("name")?.toString(),
+    userId: formData.get("userId")?.toString(),
+    mobNo: formData.get("mobNo")?.toString(),
+    addressLine1: formData.get("addressLine1")?.toString(),
+    addressLine2: formData.get("addressLine2")?.toString(),
+    city: formData.get("city")?.toString(),
+    state: formData.get("state")?.toString(),
+    zipCode: formData.get("zipCode")?.toString(),
   };
 
-  console.log("-----", recievedData);
+  const result = addressSchima.safeParse(receivedData);
+  if (!result.success) return;
 
-  const result = addressSchima.safeParse(recievedData);
-  console.log(result);
-  if (result) {
-    //  const row = await db.insert(address).values(recievedData);
-  }
-}
-
-export async function editCustomerAddress(formData: FormData) {
-  const email = formData.get("email");
-  const lastName = formData.get("lastName");
-  const firstName = formData.get("firstName");
-  const userId = formData.get("userId");
-  const mobNo = formData.get("mobNo");
-  const password = formData.get("password");
-  const addressLine1 = formData.get("addressLine1");
-  const addressLine2 = formData.get("addressLine2");
-  const city = formData.get("city");
-  const state = formData.get("state");
-  const zipCode = formData.get("zipCode");
-
-  const recievedData = {
-    email,
-    firstName,
-    lastName,
-    userId,
-    mobNo,
-    password,
-    addressLine1,
-    addressLine2,
-    city,
-    state,
-    zipCode,
-  };
-
-  const result = addressSchimaCheckout.safeParse(recievedData);
-
-  if (result) {
-    const addressData = {
-      // email,
-      firstName,
-      lastName,
-      // userId,
-      mobNo,
-      password,
-      addressLine1,
-      addressLine2,
-      city,
-      state,
-      zipCode,
-    };
-    // find address id from userId/email
-    // const q = query(collection(db, "address"), where("userId", "==", id));
-    const q = query(collection(db, "address"), where("email", "==", email));
-    const querySnapshot = await getDocs(q);
-    let data = null;
-    let docId = "";
-    //let i = 0;
-    querySnapshot.forEach((doc) => {
-      docId = doc.id;
-      // doc.data() is never undefined for query doc snapshots
-      data = doc.data();
-    });
-
-    try {
-      const editDocRef = doc(db, "address", docId);
-      updateDoc(editDocRef, addressData);
-    } catch (e) {
-      console.error("Error adding document: ", e);
-    }
-  }
-}
-
-type Task = {
-  id: string;
-  addressLine1: string;
-  addressLine2: string;
-  city: string;
-  email: string;
-  firstName: string;
-  lastName: string;
-  mobNo: string;
-  state: string;
-  userId: string;
-  zipCode: string;
-}[];
-
-
-export async function searchAddressEmail1(email: string): Promise<addressResType> {
-
-  const result = await getDocs(collection(db, "address"));
-  
-    const data = {} as addressResType;
-
-    result.forEach((doc) => {
-      console.log("find or not--------",doc.data().email)
-    //  const pData = { id: doc.id, ...doc.data() } as addressResType;
-     // data.push(pData);
-     if(doc.data().email===email){
-      Object.assign(data, doc.data());
-     }
-    });
-
-    console.log("llllllll",data)
-    return {
-      addressLine2: 'Avenue 7',
-      email: 'gurjiitsingh4@gmail.com',
-      firstName: 'Gim',
-      mobNo: '9838883323',
-      state: 'undefined',
-      addressLine1: '25 Street H No. 1',
-      userId: 'gDqlXKIfvis6SgnwaOc7',
-      lastName: 'Kari',
-      zipCode: '38518',
-      city: 'Hostin'
-    } as addressResType;
-
-}
-
-export async function searchAddressEmail(email: string): Promise<addressResType> {
-
-  let data = {
-    addressLine2: '',
-    email: email,
-    firstName: '',
-    mobNo: '',
-    state: '',
-    addressLine1: '',
-    userId: '',
-    lastName: '',
-    zipCode: '',
-    city: ''
-  } as addressResType;
-
-  const q = query(collection(db, "address"), where("email", "==", email));
-  const querySnapshot = await getDocs(q);
-    
-  querySnapshot.forEach((doc) => {
-      data = doc.data() as addressResType;
+  await adminDb.collection("address").add({
+    ...receivedData,
+    createdAt: FieldValue.serverTimestamp(),
   });
-  
-  return data;
 }
 
-export async function searchAddressByAddressId(
-  id: string
-): Promise<addressResT> {
- // console.log("---- search address by addressid ---", id);
-  const docRef = doc(db, "address", id);
-  const docSnap = await getDoc(docRef);
-  if (docSnap.exists()) {
- //   console.log("Document data:", docSnap.data());
-  } else {
-    // docSnap.data() will be undefined in this case
-    console.log("No such document!");
-  }
+// ✅ Edit address by email
+export async function editCustomerAddress(formData: FormData) {
+  const receivedData = {
+    email: formData.get("email")?.toString(),
+    firstName: formData.get("firstName")?.toString(),
+    lastName: formData.get("lastName")?.toString(),
+    userId: formData.get("userId")?.toString(),
+    mobNo: formData.get("mobNo")?.toString(),
+    password: formData.get("password")?.toString(),
+    addressLine1: formData.get("addressLine1")?.toString(),
+    addressLine2: formData.get("addressLine2")?.toString(),
+    city: formData.get("city")?.toString(),
+    state: formData.get("state")?.toString(),
+    zipCode: formData.get("zipCode")?.toString(),
+  };
 
-  return docSnap.data() as addressResT;
+  const result = addressSchimaCheckout.safeParse(receivedData);
+  if (!result.success || !receivedData.email) return;
+
+  const querySnapshot = await adminDb
+    .collection("address")
+    .where("email", "==", receivedData.email)
+    .get();
+
+  const docRefId = querySnapshot.docs[0]?.id;
+  if (docRefId) {
+    await adminDb.collection("address").doc(docRefId).update(result.data);
+  }
+}
+
+// ✅ Search address by email
+export async function searchAddressEmail(email: string): Promise<addressResType | null> {
+  const querySnapshot = await adminDb
+    .collection("address")
+    .where("email", "==", email)
+    .get();
+
+  if (querySnapshot.empty) return null;
+
+  const doc = querySnapshot.docs[0];
+  const docData = doc.data();
+
+  return {
+    id: doc.id,
+    addressLine1: docData.addressLine1 || '',
+    addressLine2: docData.addressLine2 || '',
+    city: docData.city || '',
+    state: docData.state || '',
+    zipCode: docData.zipCode || '',
+    email: docData.email || '',
+    firstName: docData.firstName || '',
+    lastName: docData.lastName || '',
+    mobNo: docData.mobNo || '',
+    userId: docData.userId || '',
+    createdAt: docData.createdAt?.toDate().toISOString() || '',
+  };
+}
+
+// ✅ Get address by ID (returns with ID)
+export async function searchAddressByAddressId(id: string): Promise<addressWithId> {
+  const docSnap = await adminDb.collection("address").doc(id).get();
+  if (!docSnap.exists) throw new Error("No such address document");
+ 
+  const raw = docSnap.data() as addressResT;
+  const createdAtStr =
+    raw.createdAt instanceof Timestamp
+      ? raw.createdAt.toDate().toISOString()
+      : new Date().toISOString();
+
+  return {
+    ...raw,
+    createdAt: createdAtStr,
+    id: docSnap.id,
+  };
 }
 
 
 
+// ✅ Get order master by ID
+export async function fetchOrderMasterById(id: string) {
+  const docSnap = await adminDb.collection("orderMaster").doc(id).get();
+  if (!docSnap.exists) return null;
 
-export const searchAddressByUserId = async (
-  id: string | undefined
-): Promise<addressResT> => {
-  
-  let data = {} as addressResT;
-  if (id !== undefined) {
-    const q = query(collection(db, "address"), where("userId", "==", id));
-    const querySnapshot = await getDocs(q);
+  const raw = docSnap.data();
+  const createdAtStr =
+    raw?.createdAt instanceof Timestamp
+      ? raw.createdAt.toDate().toISOString()
+      : new Date().toISOString();
 
-   
-    querySnapshot.forEach((doc) => {
-      data = doc.data() as addressResT;
-    });
-    return data;
-  }else{
-    return data;
-  }
+  return {
+    ...raw,
+    createdAt: createdAtStr,
+    id: docSnap.id,
+  };
+}
+
+// ✅ Search address by userId
+export const searchAddressByUserId = async (id: string | undefined): Promise<addressResT> => {
+  if (!id) return {} as addressResT;
+
+  const querySnapshot = await adminDb
+    .collection("address")
+    .where("userId", "==", id)
+    .get();
+
+  const data = querySnapshot.docs[0]?.data() as addressResT;
+  return data || ({} as addressResT);
 };
 
+// ✅ Add customer address if not exists
 export async function addCustomerAddressDirect(formData: FormData) {
-  const email = formData.get("email");
-  const lastName = formData.get("lastName");
-  const firstName = formData.get("firstName");
-  const userId = formData.get("userId");
-  const mobNo = formData.get("mobNo");
-  const password = formData.get("password");
-  const addressLine1 = formData.get("addressLine1");
-  const addressLine2 = formData.get("addressLine2");
-  const city = formData.get("city");
-  const state = formData.get("state");
-  const zipCode = formData.get("zipCode");
-
-  const recievedData = {
-    email,
-    firstName,
-    lastName,
-    userId,
-    mobNo,
-    password,
-    addressLine1,
-    addressLine2,
-    city,
-    state,
-    zipCode,
+  const receivedData = {
+    email: formData.get("email")?.toString(),
+    firstName: formData.get("firstName")?.toString(),
+    lastName: formData.get("lastName")?.toString(),
+    userId: formData.get("userId")?.toString(),
+    mobNo: formData.get("mobNo")?.toString(),
+    password: formData.get("password")?.toString(),
+    addressLine1: formData.get("addressLine1")?.toString(),
+    addressLine2: formData.get("addressLine2")?.toString(),
+    city: formData.get("city")?.toString(),
+    state: formData.get("state")?.toString(),
+    zipCode: formData.get("zipCode")?.toString(),
   };
 
-  const result = addressSchimaCheckout.safeParse(recievedData);
-  //console.log("validation result in addaddressDirect ----", result, recievedData);
+  const result = addressSchimaCheckout.safeParse(receivedData);
+  if (!result.success || !receivedData.email) return null;
 
-  const q = query(collection(db, "address"), where("email", "==", email));
-  const querySnapshot = await getDocs(q);
-  let recordId = null;
-  querySnapshot.forEach((doc) => {
-    recordId = doc.id;
-    //console.log("address allredy exist ------", doc.id);
-    return recordId;
-    // doc.data() is never undefined for query doc snapshots
-    //console.log(doc.data());
-  });
+  const querySnapshot = await adminDb
+    .collection("address")
+    .where("email", "==", receivedData.email)
+    .get();
 
-  // if customer address not in address table, add adress of cutomer
-  if (result && !recordId) {
-    // add address
+  const recordId = querySnapshot.docs[0]?.id;
 
+  if (!recordId) {
     const addressData = {
-      email,
-      firstName,
-      lastName,
-      userId: userId,
-      mobNo,
-      addressLine1,
-      addressLine2,
-      city,
-      state,
-      zipCode,
+      ...receivedData,
+      createdAt: FieldValue.serverTimestamp(),
     };
 
-    try {
-      const aadDocRef = await addDoc(collection(db, "address"), addressData);
-      console.log("new address added ------", aadDocRef.id);
-      recordId = aadDocRef.id;
-      return recordId;
-      // Clear the form
-    } catch (e) {
-      console.error("Error adding document: ", e);
-    }
+    const docRef = await adminDb.collection("address").add(addressData);
+    return docRef.id;
   }
+
   return recordId;
 }

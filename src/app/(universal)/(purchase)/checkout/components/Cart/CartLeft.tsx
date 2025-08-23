@@ -1,7 +1,7 @@
 "use client";
 import React, { useEffect, useState } from "react";
 import { useCartContext } from "@/store/CartContext";
-import { FaChevronDown, FaCheck } from "react-icons/fa";
+import { FaChevronDown } from "react-icons/fa";
 import CouponDiscForm from "./CouponDiscForm";
 import { UseSiteContext } from "@/SiteContext/SiteContext";
 import DeliveryCost from "./DeliveryCost";
@@ -11,19 +11,25 @@ import { cartProductType, orderDataType } from "@/lib/types/cartDataType";
 import { createNewOrder } from "@/app/(universal)/action/orders/dbOperations";
 import { useRouter } from "next/navigation";
 import toast from "react-hot-toast";
+import { useLanguage } from "@/store/LanguageContext";
+import { formatCurrencyNumber } from "@/utils/formatCurrency";
+import SetDeliveryType from "./SetDeliveryType";
 
 export default function CartLeft() {
+
+  const { TEXT } = useLanguage();
   const {
     couponDisc,
     deliveryDis,
-    chageDeliveryType,
-    deliveryType,
     paymentType,
+    deliveryType,
     customerAddressIsComplete,
     setDeliveryCost,
     disablePickupCatDiscountIds,
     settings,
   } = UseSiteContext();
+
+  
 
   const router = useRouter();
 
@@ -37,8 +43,7 @@ export default function CartLeft() {
   const [calCouponDiscount, setCalCouponDisscount] = useState(0);
   const [flatCouponDiscount, setFlatCouponDisscount] = useState(0);
   const [couponDiscountPercentL, setcouponDiscountPercentL] = useState(0);
-  const [disableDeliveryBtn, setDisableDeliveryBtn] = useState(false);
-  const [disablePickUpBtn, setDisablePickUpBtn] = useState(false);
+  
   const [orderAmountIsLowForDelivery, seOrderAmountIsLowForDelivery] =
     useState(false);
   const [noOffers, setNoOffers] = useState(false);
@@ -82,7 +87,15 @@ export default function CartLeft() {
 
     const roundedTotal = parseFloat(total.toFixed(2));
     setitemTotal(roundedTotal);
-    setitemTotalComa(roundedTotal.toFixed(2).replace(".", ","));
+
+    const roundedTotalCU = formatCurrencyNumber(
+      roundedTotal ?? 0,
+      (settings.currency || "EUR") as string,
+      (settings.locale || "de-DE") as string
+    );
+
+    //setitemTotalComa(roundedTotal.toFixed(2).replace(".", ","));
+    setitemTotalComa(roundedTotalCU);
 
     const pickupDiscountAmount = calculateDiscount(
       filteredTotal,
@@ -141,6 +154,7 @@ export default function CartLeft() {
 
   useEffect(() => {
     if (itemTotal <= 0) return;
+    // console.log("applyDelivery, applyPickup-------", couponDisc?.applyDelivery,couponDisc?.applyPickup)
 
     if (deliveryType === "pickup" && !couponDisc?.applyPickup) {
       setCalCouponDisscount(0);
@@ -169,7 +183,6 @@ export default function CartLeft() {
           setcouponDiscountPercentL(
             parseFloat(((price / itemTotal) * 100).toFixed(2))
           );
-          console.log("discount on pickup appll----------");
         } else {
           const percent = +couponDisc.discount;
           const totalDis = parseFloat(((itemTotal * percent) / 100).toFixed(2));
@@ -202,7 +215,14 @@ export default function CartLeft() {
     ).toFixed(2);
 
     setDeliveryCost(deliveryCost);
-    setEndTotalComma(netPay.replace(".", ","));
+
+    const netPayCU = formatCurrencyNumber(
+      Number(netPay) ?? 0,
+      (settings.currency || "EUR") as string,
+      (settings.locale || "de-DE") as string
+    );
+
+    setEndTotalComma(netPayCU);
     setEndTotalG(parseFloat(netPay));
     setTotalDiscountG(parseFloat(netDiscount));
   }, [
@@ -215,10 +235,7 @@ export default function CartLeft() {
     calculatedPickUpDiscountL,
   ]);
 
-  useEffect(() => {
-    setDisablePickUpBtn(deliveryType === "pickup");
-    setDisableDeliveryBtn(deliveryType === "delivery");
-  }, [deliveryType]);
+ 
 
   useEffect(() => {
     if (deliveryType === "delivery") {
@@ -248,35 +265,61 @@ export default function CartLeft() {
 
       if (paymentType === "" || paymentType === undefined) {
         canCompleteOrder = true;
-        toast.error("Select Payment type");
+       toast.error(TEXT.error_select_payment_type);
+
         allReadyAlerted = true;
         return;
       }
 
       if (!customerAddressIsComplete) {
-        toast.error("Select Address");
+        toast.error(TEXT.error_select_address);
         allReadyAlerted = true;
         return;
       }
 
-      if (deliveryType === "delivery" && deliveryDis === undefined) {
-        canCompleteOrder = true;
-        if (!allReadyAlerted) {
-          toast.error(
-            "Wir können nicht an diese Adresse liefern. Bitte wählen Sie Abholung."
-          );
-          //We cannot deliver to this address. Please select pickup.
-          allReadyAlerted = true;
-        }
-        return;
-      }
+     
+  
+// if (deliveryType === "delivery") {
+//    if (
+//     !deliveryDis || 
+//     typeof deliveryDis.price !== "number" || 
+//     isNaN(deliveryDis.price)
+//   ) {
+//     console.log("deliveryDis.price-------",typeof(deliveryDis!.price))
+//     setIsLoading(false);
+//     toast.error(TEXT.error_address_not_deliverable);
+//     return; // ⛔ stop
+//   }
+
+//  }
+
+
+if (deliveryType === "delivery") {
+  if (!deliveryDis || deliveryDis.price === null) {
+    setIsLoading(false);
+    toast.error(TEXT.error_address_not_deliverable);
+    return; // ⛔ stop
+  }
+
+  // convert to number
+  const price = Number(deliveryDis.price);
+
+  if (isNaN(price)) {
+    setIsLoading(false);
+    toast.error(TEXT.error_address_not_deliverable);
+    return;
+  }
+
+
+}
+
+     
 
       if (couponDisc?.minSpend && itemTotal < couponDisc.minSpend) {
         canCompleteOrder = true;
         if (!allReadyAlerted) {
-          toast.error(
-            `Minimun purchase amount to get discount is € ${couponDisc?.minSpend} , Remove coupon or add more item to cart`
-          );
+          toast.error(`${TEXT.error_min_purchase_coupon} : ${couponDisc?.minSpend} ${TEXT.error_min_purchase_suffix}`);
+
           allReadyAlerted = true;
         }
         return;
@@ -285,9 +328,8 @@ export default function CartLeft() {
       if (orderAmountIsLowForDelivery && deliveryType !== "pickup") {
         canCompleteOrder = true;
         if (!allReadyAlerted) {
-          toast.error(
-            `Minimum order amount for delivery is € ${deliveryDis?.minSpend}`
-          );
+          toast.error(`${TEXT.error_min_order_delivery} € ${deliveryDis?.minSpend}`);
+
           allReadyAlerted = true;
         }
         return;
@@ -302,9 +344,10 @@ export default function CartLeft() {
 
       const AddressId =
         JSON.parse(localStorage.getItem("customer_address_Id") || "null") || "";
-      const order_user_Id = JSON.parse(
-        localStorage.getItem("order_user_Id") || ""
-      );
+      // const order_user_Id = JSON.parse(
+      //   localStorage.getItem("order_user_Id") || ""
+      // );
+      const order_user_Id = localStorage.getItem("order_user_Id") ?? null;
       const customer_name = JSON.parse(
         localStorage.getItem("customer_name") || ""
       );
@@ -313,6 +356,18 @@ export default function CartLeft() {
         localStorage.getItem("customer_email") || ""
       );
       const couponCode = "KJKKS"; // couponDisc?.code?.trim() ? couponDisc.code : "NA";
+
+      if (typeof deliveryCost !== "number" || Number.isNaN(deliveryCost)) {
+       toast.error(TEXT.error_unexpected_total);
+
+        return;
+      }
+
+      if (typeof endTotalG !== "number" || Number.isNaN(endTotalG)) {
+        toast.error(TEXT.error_unexpected_total);
+
+        return;
+      }
 
       const purchaseData = {
         userId: order_user_Id,
@@ -352,7 +407,8 @@ export default function CartLeft() {
           );
         }
       } else {
-        toast.error(`Cart is empty, add some foods`);
+       toast.error(TEXT.error_empty_cart);
+
       }
     } catch (error) {
       console.error("Order submission error:", error);
@@ -361,14 +417,13 @@ export default function CartLeft() {
       setIsLoading(false);
     }
   }
+
   return (
     <div className="flex flex-col gap-4 w-full ">
       <div className="flex flex-col bg-slate-50 p-5 h-full w-full gap-7 rounded-2xl">
         <div className="flex flex-col gap-2 items-center">
           <h2 className="text-xl font-semibold border-b border-slate-200 py-3 w-full uppercase">
-            {/* Shopping cart total */}
-            {/* Gesamtsumme im Warenkorb */}
-            Warenkorb-Summe.
+            {TEXT.cart_heading}
           </h2>
 
           <div className="font-semibold border-b border-slate-200 py-3 w-full flex flex-col justify-between gap-4">
@@ -377,7 +432,7 @@ export default function CartLeft() {
                 onClick={() => setAddCoupon(!addCoupon)}
                 className="flex gap-2 items-center text-sm text-slate-600 bg-green-200 rounded-2xl px-3 font-semibold py-1 w-full text-left "
               >
-                <span>Fügen Sie einen Gutschein hinzu </span>
+                <span>{TEXT.add_coupon_button}</span>
                 <span>
                   <FaChevronDown />
                 </span>
@@ -393,55 +448,14 @@ export default function CartLeft() {
 
           <div className="font-semibold border-b border-slate-200 py-3 w-full flex justify-between">
             <div className="text-sm font-semibold py-3 w-full text-left">
-              Zwischensumme
+              {TEXT.subtotal_label}
             </div>
             <div className="flex gap-1">
-              {itemTotalComa && <span>&#8364;</span>}{" "}
-              <span>{itemTotalComa}</span>
+              {itemTotalComa && <span> </span>} <span>{itemTotalComa}</span>
             </div>
           </div>
 
-          <div className="font-semibold border-b border-slate-200 py-3 w-full flex  justify-start gap-4">
-            <div className="flex flex-col gap-2">
-              <div className="h-5 flex justify-center">
-                {deliveryType === "pickup" && (
-                  <FaCheck className="text-green-300 " size={24} />
-                )}
-              </div>
-              <div className="w-fit">
-                <button
-                  disabled={disablePickUpBtn}
-                  onClick={() => chageDeliveryType("pickup")}
-                  className="flex gap-2  items-center text-sm text-slate-600 bg-green-200 border border-slate-200 rounded-2xl px-3 font-semibold py-1 w-full text-left "
-                >
-                  <span>Abholen </span>
-                  {/* <span>
-                  <FaChevronDown />
-                </span> */}
-                </button>
-              </div>
-            </div>
-            <div className="flex flex-col gap-2">
-              <div className="h-5 flex justify-center">
-                {deliveryType === "delivery" && (
-                  <FaCheck className="text-green-300 " size={24} />
-                )}
-              </div>
-
-              <div className="w-fit">
-                <button
-                  disabled={disableDeliveryBtn}
-                  onClick={() => chageDeliveryType("delivery")}
-                  className="flex gap-2 items-center text-sm text-slate-600 bg-green-200 border border-slate-50 rounded-2xl px-3 font-semibold py-1 w-full text-left "
-                >
-                  <span>Lieferung </span>
-                  {/* <span>
-                  <FaChevronDown />
-                </span> */}
-                </button>
-              </div>
-            </div>
-          </div>
+         <SetDeliveryType />
 
           <DeliveryCost />
 
@@ -450,15 +464,17 @@ export default function CartLeft() {
             calculatedPickUpDiscount={calculatedPickUpDiscountL}
           />
 
-          {onlyItemsWithDisabledCouponCode && <CouponDisc total={itemTotal} />}
+          {onlyItemsWithDisabledCouponCode &&
+            flatCouponDiscount + calCouponDiscount !== 0 && (
+              <CouponDisc total={itemTotal} />
+            )}
 
           <div className="font-semibold border-b border-slate-200 py-3 w-full flex justify-between items-center">
             <div className="text-md font-semibold py-3 w-full text-left">
-              Gesamt
+              {TEXT.total_label}
             </div>
             <div className="flex gap-1">
-              {endTotalComma && <span>&#8364;</span>}{" "}
-              <span>{endTotalComma}</span>
+              {endTotalComma && <span></span>} <span>{endTotalComma}</span>
             </div>
           </div>
         </div>
@@ -472,46 +488,25 @@ export default function CartLeft() {
               onChange={(e) => {
                 const checked = e.target.checked;
                 setNoOffers(checked);
-                setShowAlert(checked); // Show alert only when checked
+                setShowAlert(checked);
               }}
               className="w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
             />
-            <label htmlFor="noOffersCheckbox">
-              Ich möchte keine E-Mails über neue Angebote und Rabatte erhalten.
-            </label>
+            <label htmlFor="noOffersCheckbox">{TEXT.no_offers_checkbox}</label>
           </div>
 
           {showAlert && (
             <div className="bg-yellow-100 text-yellow-800 p-3 rounded-md text-sm border border-yellow-300">
-              <p>
-                Sie haben gewählt, keine E-Mails über neue Angebote und Rabatte
-                zu erhalten. Wenn Sie E-Mails erhalten möchten, deaktivieren Sie
-                das Kontrollkästchen.
-              </p>
-              <p className="mt-1">
-                You have selected not to receive emails about new offers and
-                discounts. If you want to receive such emails, please uncheck
-                the box.
-              </p>
+              <p>{TEXT.no_offers_alert_line1}</p>
+              <p className="mt-1">{TEXT.no_offers_alert_line2}</p>
             </div>
           )}
         </div>
 
-        {/* <button
-          disabled={isDisabled}
-          className="w-[200px] py-1 text-center bg-amber-400  font-bold rounded-xl text-[1.2rem] z-50"
-          onClick={() => {
-            proceedToOrder();
-          }}
-        >
-          <span className=" text-blue-900">Submit</span>
-          <span className=" text-sky-500">Order</span>
-        </button> */}
-
         <button
           onClick={proceedToOrder}
           disabled={isLoading}
-          className="w-full   px-4 py-2 font-bold rounded-xl text-[1.2rem] bg-amber-400 text-blue-900 hover:bg-amber-500 disabled:opacity-50 flex items-center justify-center gap-2"
+          className="w-full px-4 py-2 font-bold rounded-xl text-[1.2rem] bg-amber-400 text-blue-900 hover:bg-amber-500 disabled:opacity-50 flex items-center justify-center gap-2"
         >
           {isLoading && (
             <svg
@@ -536,14 +531,17 @@ export default function CartLeft() {
             </svg>
           )}
           {isLoading ? (
-            "Placing Order..."
+            TEXT.placing_order_text
           ) : (
             <>
-              Place<span className="text-sky-500">Order</span>
+              {TEXT.place_order_button}
+              <span className="text-sky-500">{TEXT.order_button_suffix}</span>
             </>
           )}
         </button>
       </div>
     </div>
   );
+
+  
 }

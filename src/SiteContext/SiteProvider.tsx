@@ -37,7 +37,7 @@ export const SiteProvider: React.FC<Props> = ({
     useState(false);
   const [deliveryType, setDeliveryType] = useState<string>("pickup");
   const [couponDisc, setCouponDiscU] = useState<couponType | undefined>();
-  const [deliveryDis, setdeliveryDisU] = useState<deliveryType | undefined>();
+  const [deliveryDis, setdeliveryDisU] = useState<deliveryType | null>(null);
   const [showProductDetailM, setShowProductDetailML] = useState<boolean>(false);
   const [baseProductId, setBaseProductIdL] = useState<string>("");
   const [adminSideBarToggle, setAdminSideBarToggleL] = useState<boolean>(false);
@@ -51,12 +51,28 @@ export const SiteProvider: React.FC<Props> = ({
     useState<string[]>([]);
   const [allProduct, setAllProduct] = useState<ProductType[]>([]);
   const [productToSearchQuery, setProductToSearchQuery] = useState("");
-  useEffect(() => {
-    getAllSettings().then(setSettings).catch(console.error);
-  }, []);
-  // useEffect(()=>{
-  //   console.log("settings---------",settings)
-  // },[settings])
+  // useEffect(() => {
+  //   getAllSettings().then(setSettings).catch(console.error);
+  // }, []);
+ useEffect(() => {
+  getAllSettings()
+    .then((fetched) => {
+      setSettings({
+        currency: fetched.currency || process.env.NEXT_PUBLIC_DEFAULT_CURRENCY || 'EUR',
+        locale: fetched.locale || process.env.NEXT_PUBLIC_DEFAULT_LOCALE || 'de-DE',
+        ...fetched, // place this last so fetched values override defaults if present
+      });
+    })
+    .catch((err) => {
+      console.error("Error fetching settings:", err);
+      // fallback to .env if Firestore fetch fails
+      setSettings({
+        currency: process.env.NEXT_PUBLIC_DEFAULT_CURRENCY || 'EUR',
+        locale: process.env.NEXT_PUBLIC_DEFAULT_LOCALE || 'de-DE',
+      });
+    });
+}, []);
+
 
   useEffect(() => {
     const stored = localStorage.getItem("disablePickupCatDiscountIds");
@@ -101,7 +117,7 @@ export const SiteProvider: React.FC<Props> = ({
   function setCouponDisc(e: couponType | undefined) {
     setCouponDiscU(e);
   }
-  function setdeliveryDis(e: deliveryType | undefined) {
+  function setdeliveryDis(e: deliveryType | null) {
     setdeliveryDisU(e);
   }
   // deliveryDis:{},

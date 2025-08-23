@@ -53,6 +53,40 @@
 .text-dark{
    @apply text-[#64870d]
 }
+
+
+/* side bar */
+
+
+/* 🦚 Elegant Teal Theme */
+
+.sb-bg {
+  @apply bg-[#121C1B]; /* Very dark teal slate background */
+}
+
+.sb-tab {
+  @apply text-slate-300 hover:bg-[#1C2B29]; /* Soft slate hover */
+}
+
+.sb-tab-active {
+  @apply bg-[#00897B] text-white shadow-md; /* Main active tab color */
+}
+
+.sb-btn {
+  @apply bg-[#00897B] text-white hover:bg-[#00695C]; /* Main button */
+}
+
+.sb-btn-outline {
+  @apply border border-[#00897B] text-[#00897B] hover:bg-[#00897B] hover:text-white;
+}
+
+.sb-header {
+  @apply text-[#00BFA5]; /* Highlight teal tone for headers */
+}
+
+
+
+
 /* #F2F0EC; */
 /* bg-gradient-to-bl from-[#ffe4e6]  to-[#ccfbf1]  */
 :root {
@@ -156,4 +190,135 @@ button:disabled {
   background-color: #ccc;
   color: #666;
   cursor: not-allowed;
+}
+
+
+/* === Layout Colors === */
+.layout-bg {
+  @apply bg-[#cb9d80] md:bg-[#cb9d80];
+}
+
+/* === Toast Styles === */
+.toast-default {
+  @apply bg-slate-800 text-slate-50;
+}
+
+.toast-success {
+  @apply bg-emerald-500 text-white;
+}
+
+.toast-error {
+  @apply bg-red-500 text-white;
+}
+
+.toast-loading {
+  @apply bg-amber-500 text-white;
+}
+
+
+/* === Title Component Styles === */
+
+.text-brand-heading {
+  @apply text-[#496208];
+}
+
+.text-brand-subheading {
+  @apply text-xl text-[#496208]; 
+}
+
+
+/* === Hero Text === */
+.hero-heading {
+  @apply text-3xl w-fit my-2 text-emerald-900;
+}
+
+.hero-subtext {
+  @apply text-xl;
+}
+
+.hero-delivery-note {
+  @apply py-2  text-slate-600 w-fit h-fit font-semibold rounded-xl mb-2;
+}
+
+.hero-disclaimer {
+  @apply text-sm text-slate-500;
+}
+
+
+
+
+/* Nav bar */
+
+.header-bg {
+  @apply bg-[#eba363]
+}
+.navbar-link-top {
+  @apply text-slate-700;
+}
+
+.header-shadow {
+  @apply shadow-md;
+}
+
+.header-opacity {
+  @apply opacity-70;
+}
+
+.header-rounded {
+  @apply rounded-xl;
+}
+
+.header-toggle-hover {
+  @apply hover:bg-gray-100 focus:outline-none;
+}
+
+.navbar-link {
+  @apply text-slate-100;
+}
+
+
+/* Footer background colors */
+.footer-bg-primary {
+  @apply bg-[#eba363]; /* Original: #FADB5E */
+}
+
+.footer-bg-bottom {
+  @apply bg-[#6a4931]; /* Original: #64870d */
+}
+
+/* Footer card background and border */
+.footer-box-bg {
+  @apply bg-amber-200; /* Original: Tailwind amber-200 */
+}
+
+.footer-border {
+  @apply border border-amber-50; /* Original: Tailwind amber-50 */
+}
+
+/* Text colors */
+.footer-text {
+  @apply text-slate-700;
+}
+
+.footer-text-light {
+  @apply text-slate-100;
+}
+
+/* Border bottom for list items */
+.footer-item-border {
+  @apply border-b border-slate-400;
+}
+
+
+/* Products */
+.product-card-bg{
+  @apply bg-zinc-50
+}
+
+.product-card-add-button-cover-1{
+  @apply text-slate-500 bg-[#FADB5E]
+}
+
+.product-card-add-title-cover-1{
+  @apply bg-[#64870d] text-white flex items-center justify-center text-nowrap text-center px-2 py-1  min-w-[180px]  rounded-3xl
 }

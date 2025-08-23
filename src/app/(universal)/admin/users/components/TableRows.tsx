@@ -1,76 +1,47 @@
+"use client";
+
 import { deleteUser } from "@/app/(universal)/action/user/dbOperation";
 import { Button } from "@/components/ui/button";
-import {
-  // Table,
-  // TableBody,
-  TableCell,
-  // TableHead,
-  // TableHeader,
-  TableRow,
-  //  TableCaption,
-} from "@/components/ui/table";
-//import { deleteProduct } from "@/app/(universal)/action/products/dbOperation";
+import { TableCell, TableRow } from "@/components/ui/table";
 import { userType } from "@/lib/types/userType";
-
 import { MdDeleteForever } from "react-icons/md";
-//import { useRouter  } from "next/navigation";
-function TableRows({ user }: { user: userType }) {
-  async function handleDelete(user: userType) {
-    // confirm("Do you want to delete user!\n If yes click OK \n If not click Cancel.");
-   if(confirm(
-      "Möchten Sie den Benutzer löschen?\n Falls ja, klicken Sie auf OK. \n Falls nicht, klicken Sie auf Cancel."
-    )){
+import { useLanguage } from "@/store/LanguageContext";
 
-    const result = await deleteUser(user.id, "user.image");
+function TableRows({ user }: { user: userType }) {
+  const { TEXT } = useLanguage();
+ 
+  async function handleDelete(user: userType) {
+    const confirmDelete = confirm(
+      TEXT?.confirm_delete_user ||
+        "Do you want to delete this user?\nIf yes, click OK.\nIf not, click Cancel."
+    );
+    if (!confirmDelete) return;
+
+    const result = await deleteUser(user.id);
+
     if (result.message.success === "ok") {
       location.reload();
     } else {
-      alert("Failed");
+      alert(TEXT?.alert_failed_delete || "Failed to delete user.");
     }
-
-  }else{
-    return false;
-  }
-
-
-
-    
   }
 
   return (
-    <TableRow
-      key={user.id}
-      className="whitespace-nowrap bg-slate-50 rounded-lg p-1 my-1"
-    >
-      <TableCell>{user.id}</TableCell>
+    <TableRow className="whitespace-nowrap hover:bg-green-50 dark:hover:bg-zinc-800 transition rounded-xl">
       <TableCell>{user.username}</TableCell>
       <TableCell>{user.email}</TableCell>
       <TableCell>{user.role}</TableCell>
-      <TableCell>
-        <p className="flex gap-3">
-          {/* <Link
-            href={{
-              pathname: `/admin/users/editform`,
-              //  pathname: "/admin/products/editform",
-              query: {
-                id: user.id,
-              },
-            }}
-          >
-            <Button size="sm" className="bg-red-500 px-1 py-0">
-              <CiEdit size={20} className="text-white" />
-            </Button>
-          </Link> */}
-          {/* <Button onClick={async () => {await deleteItem("foobar")}} className="p-1">  <CiEdit /></Button> */}
-
+      <TableCell className="text-right">
+        <div className="flex justify-end gap-2">
           <Button
             onClick={() => handleDelete(user)}
             size="sm"
-            className="bg-red-600 px-1 py-0 "
+            className="bg-red-600 hover:bg-red-700 px-2 py-1"
+            aria-label={TEXT?.aria_delete_user || "Delete User"}
           >
-            <MdDeleteForever size={20} className="text-white" />
+            <MdDeleteForever size={18} className="text-white" />
           </Button>
-        </p>
+        </div>
       </TableCell>
       <TableCell>{user.time!}</TableCell>
     </TableRow>

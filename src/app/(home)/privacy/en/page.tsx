@@ -16,9 +16,9 @@ export default function PrivacyPage() {
       <h1 className="text-3xl font-bold mb-6">Privacy Policy</h1>
 
       <p className="mb-4">
-        At <strong>Athenas Grill</strong> (
-        <a href="https://www.athenasgrill.de" className="text-blue-600 underline">
-          www.athenasgrill.de
+        At <strong>Masala Taste of India</strong> (
+        <a href="https://www.masala-gf.de" className="text-blue-600 underline">
+          www.masala-gf.de
         </a>
         ), we take your privacy seriously. This page explains how we collect, use, and protect your personal data.
       </p>
@@ -65,8 +65,8 @@ export default function PrivacyPage() {
       </p>
       <p className="mb-4">
         📧{' '}
-        <a href="mailto:info@athenasgrill.de" className="text-blue-600 underline">
-          info@athenasgrill.de
+        <a href="mailto:info@masala-gf.de" className="text-blue-600 underline">
+          info@masala-gf.de
         </a>
       </p>
 
@@ -75,8 +75,8 @@ export default function PrivacyPage() {
         If you have any questions regarding this privacy policy, feel free to reach out to us:
         <br />
         📧{' '}
-        <a href="mailto:info@athenasgrill.de" className="text-blue-600 underline">
-          info@athenasgrill.de
+        <a href="mailto:info@masala-gf.de" className="text-blue-600 underline">
+          info@masala-gf.de
         </a>
       </p>
 

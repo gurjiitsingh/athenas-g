@@ -1,21 +1,7 @@
 "use server";
 
-import { db } from "@/lib/firebaseConfig";
-import {
-  addDoc,
-  collection,
-  deleteDoc,
-  doc,
-  getDoc,
-  getDocs,
-  limit,
-  orderBy,
-  query,
-  updateDoc,
-  where,
-} from "@firebase/firestore";
-import { setDoc, serverTimestamp } from "firebase/firestore";
 
+import { adminDb } from "@/lib/firebaseAdmin";
 import { Timestamp } from "firebase/firestore";
 import { addUserDirect } from "../user/dbOperation";
 import { addCustomerAddressDirect } from "../address/dbOperations";
@@ -23,127 +9,67 @@ import { TOrderMaster, orderMasterDataT } from "@/lib/types/orderMasterType";
 import { orderProductsT } from "@/lib/types/orderType";
 import { orderDataType, purchaseDataT } from "@/lib/types/cartDataType";
 import { ProductType } from "@/lib/types/productType";
+import admin from 'firebase-admin';
 
-export async function createNewOrderCustomerAddress(
-  purchaseData: purchaseDataT
-) {
-  //  console.log("--------------------- cart data in cart save draft  ",purchaseData)
-  //1. user id
-  //2. user address
-  //3. cart data
+type orderMasterDataSafeT = Omit<orderMasterDataT, "createdAt"> & {
+  createdAt: string; // ISO string
+};
 
-  const email = purchaseData.address.email;
-  const lastName = purchaseData.address.lastName;
-  const firstName = purchaseData.address.firstName;
-  // const total = purchaseData.total;
-  // const totalDiscountG = purchaseData.totalDiscountG;
-  //const userId = purchaseData.address.userId;
-  // const password = purchaseData.address.password;
-  const password = "123456";
-  const username = firstName + "" + lastName;
-  //if(purchaseData.userId === undefined){
+type FetchOrdersOptions = {
+  afterId?: string;
+  pageSize?: number;
+};
+
+
+export async function createNewOrderCustomerAddress(purchaseData: purchaseDataT) {
+  const { address } = purchaseData;
+  const { email, lastName, firstName } = address;
+
+  const password = "123456"; // default password
+  const username = `${firstName}${lastName}`;
+
+  // Step 1: Create user account
   const formData = new FormData();
   formData.append("username", username);
   formData.append("email", email);
   formData.append("password", password);
   formData.append("confirmPassword", password);
-  // const result = await addUser(formData);
-  const UserAddedId = (await addUserDirect(formData)) as string;
-  console.log("UserAdded by id------------", UserAddedId);
 
-  // Now check address or add new address
+  const UserAddedId = (await addUserDirect(formData)) as string;
+
+  // Step 2: Add customer address
   const formDataAdd = new FormData();
-  formDataAdd.append("firstName", purchaseData.address.firstName);
-  formDataAdd.append("lastName", purchaseData.address.lastName);
+  formDataAdd.append("firstName", firstName);
+  formDataAdd.append("lastName", lastName);
   formDataAdd.append("userId", UserAddedId);
-  formDataAdd.append("email", purchaseData.address.email);
-  formDataAdd.append("mobNo", purchaseData.address.mobNo);
-  formDataAdd.append("password", "123456");
-  formDataAdd.append("addressLine1", purchaseData.address.addressLine1!);
-  formDataAdd.append("addressLine2", purchaseData.address.addressLine2!);
-  formDataAdd.append("city", purchaseData.address.city);
-  formDataAdd.append("state", purchaseData.address.state);
-  formDataAdd.append("zipCode", purchaseData.address.zipCode);
+  formDataAdd.append("email", email);
+  formDataAdd.append("mobNo", address.mobNo);
+  formDataAdd.append("password", password);
+  formDataAdd.append("addressLine1", address.addressLine1 || "");
+  formDataAdd.append("addressLine2", address.addressLine2 || "");
+  formDataAdd.append("city", address.city);
+  formDataAdd.append("state", address.state);
+  formDataAdd.append("zipCode", address.zipCode);
 
   const addressAddedId = await addCustomerAddressDirect(formDataAdd);
-  // enter data in order master
 
-  const customerName = firstName + " " + lastName;
+  const customerName = `${firstName} ${lastName}`;
 
   return { addressAddedId, UserAddedId, customerName };
 }
 
+
 export async function createNewOrder(purchaseData: orderDataType) {
-  //  console.log("--------------------- cart data in cart save draft  ",purchaseData)
-  //1. user id
-  //2. user address
-  //3. cart data
 
-  //const now = new Date();
-  // const now_india = now.toLocaleString("en-IN", {
-  //   dateStyle: "medium",
-  //   timeStyle: "medium",
-  //   timeZone: "Asia/Kolkata",
-  // });
-
-  //"de-DE"
-  const now_german = new Date().toLocaleString("en-DE", {
-    dateStyle: "medium",
-    timeStyle: "medium",
-    timeZone: "Europe/Berlin",
-  });
-  // const order = await fetchOrdersMaster()
-  const collectionRef = collection(db, "orderMaster");
-  const targetQuery = query(collectionRef, orderBy("srno", "desc"), limit(1));
-  const querySnapshot = await getDocs(targetQuery);
-  //  const q = query(collectionRef);
-  //  const querySnapshot = await getDocs(q);
-  let new_srno = 1;
-  const orderData = [] as orderMasterDataT[];
-  querySnapshot.forEach((doc) => {
-    const data = doc.data() as orderMasterDataT;
-    //   console.log("last order ----------", data)
-    orderData.push(data);
-  });
-  if (orderData[0]?.srno !== undefined) {
-    new_srno = orderData[0].srno + 1;
-  }
-  //  console.log("sr No ----------", new_srno)
-  // const timeId = new Date().toISOString();
-  const total = purchaseData.endTotalG;
-  const totalDiscountG = purchaseData.totalDiscountG;
-  const addressId = purchaseData.addressId;
-  const userAddedId = purchaseData.userId as string;
-  const customerName = purchaseData.customerName;
-  const email = purchaseData.email;
-  const paymentType = purchaseData.paymentType;
-
-  const itemTotal = purchaseData.itemTotal;
-
-  const deliveryCost = purchaseData.deliveryCost;
-  const calculatedPickUpDiscountL = purchaseData.calculatedPickUpDiscountL;
-
-  const flatDiscount = purchaseData.flatDiscount;
-  const calCouponDiscount = purchaseData.calCouponDiscount;
-  const couponCode = purchaseData.couponCode;
-  const couponDiscountPercentL = purchaseData.couponDiscountPercentL;
-  const pickUpDiscountPercentL = purchaseData.pickUpDiscountPercentL;
-  const noOffers = purchaseData.noOffers;
-
-  let status = "Payment Pending";
-  if (paymentType === "cod") {
-    status = "Completed";
-  }
-
-  const orderMasterData = {
-    // also add auto increment to order,
-    customerName: customerName,
+ const {
+    endTotalG,
+    totalDiscountG,
+    addressId,
+    userId,
+    customerName,
     email,
-    userId: userAddedId,
-    addressId: addressId,
+    paymentType,
     itemTotal,
-    endTotalG: total,
-
     deliveryCost,
     calculatedPickUpDiscountL,
     flatDiscount,
@@ -151,44 +77,141 @@ export async function createNewOrder(purchaseData: orderDataType) {
     couponCode,
     couponDiscountPercentL,
     pickUpDiscountPercentL,
+    noOffers,
+    cartData,
+  } = purchaseData;
 
+
+  // validaton start
+
+
+//change main funciton
+
+// export async function createNewOrder(
+//   purchaseData: orderDataType
+// ): Promise<{ success: boolean; message: string; orderId?: string }> {
+
+
+
+  // try {
+  //   // ✅ DELIVERY VALIDATION
+  //   if (purchaseData.deliveryType === "delivery") {
+  //     if (!purchaseData.zipCode) {
+  //       return { success: false, message: "Zip code is required for delivery." };
+  //     }
+
+  //     // Check if ZIP exists in delivery list
+  //     const deliveryData = await fetchdeliveryByZip(purchaseData.zipCode);
+
+  //     if (!deliveryData || !deliveryData.name) {
+  //       return {
+  //         success: false,
+  //         message: "Sorry, we do not deliver to this zip code.",
+  //       };
+  //     }
+
+  //     // Optionally validate minimum spend
+  //     if (purchaseData.endTotalG < (deliveryData.minSpend || 0)) {
+  //       return {
+  //         success: false,
+  //         message: `Minimum order amount for delivery in ${deliveryData.name} is €${deliveryData.minSpend}.`,
+  //       };
+  //     }
+  //   }
+
+
+    //end new validation code
+
+  const nowUTC = new Date().toISOString(); // UTC ISO string (e.g. "2025-07-24T06:07:32.123Z")
+  
+  const nowGerman = new Date().toLocaleString("en-DE", {
+    dateStyle: "medium",
+    timeStyle: "medium",
+    timeZone: "Europe/Berlin",
+  });
+
+  // Get latest srno
+  const collectionRef = adminDb.collection("orderMaster");
+  const snapshot = await collectionRef
+    .orderBy("srno", "desc")
+    .limit(1)
+    .get();
+
+  let new_srno = 1;
+  if (!snapshot.empty) {
+    const latest = snapshot.docs[0].data() as orderMasterDataT;
+    new_srno = (latest?.srno || 0) + 1;
+  }
+
+ 
+
+  const status = paymentType === "cod" ? "Completed" : "Payment Pending";
+
+  const orderMasterData = {
+    customerName,
+    email,
+    userId,
+    addressId,
+    itemTotal,
+    endTotalG,
+    deliveryCost,
+    calculatedPickUpDiscountL,
+    flatDiscount,
+    calCouponDiscount,
+    couponCode,
+    couponDiscountPercentL,
+    pickUpDiscountPercentL,
     paymentType,
     status,
     totalDiscountG,
-    createdAt: serverTimestamp(),
-    time: now_german,
+    createdAt: admin.firestore.FieldValue.serverTimestamp(),
+    createdAtUTC: nowUTC, // ISO string, cross-compatible
+    time: nowGerman,
     srno: new_srno,
   } as orderMasterDataT;
-  //console.log("order master---------", orderMasterData);
+  
 
-  const orderMasterId = (await addOrderToMaster(orderMasterData)) as string;
+  // Add to orderMaster collection
+  const orderMasterId = await addOrderToMaster(orderMasterData);
 
-  // add product to productOrder
+  // Add each product to orderProducts
+  for (const product of cartData) {
+    await addProductDraft(product, userId!, orderMasterId!);
+  }
 
-  // unique id ->   purchaseSession: '1737704030168',
-  const purchaseProducts = purchaseData.cartData as ProductType[];
-
-  purchaseProducts.forEach((element) => {
-    //  console.log("order item---------", element,userAddedId, orderMasterId)
-    addProductDraft(element, userAddedId, orderMasterId);
-  });
-
-  // save marketing data
-
+  // Save marketing data
   await marketingData({
     name: customerName,
-    userId: userAddedId,
+    userId,
     addressId,
     email,
     noOfferEmails: noOffers,
   });
 
-  return orderMasterId;
+  // Optional: mark email as unsubscribed in campaign list
+  if (noOffers) {
+    const normalizedEmail = email.toLowerCase();
+    const ref = adminDb.collection("campaignEmailListFinal");
+    const existing = await ref.where("email", "==", normalizedEmail).get();
 
-  //  const toBeDeleted = cartData[0].purchaseSession;
-  //  console.log(toBeDeleted)
-  //  await deleteDoc(doc(db, "orderProducts", toBeDeleted));
-} //end of cart to orderProduct
+    if (!existing.empty) {
+      await existing.docs[0].ref.update({
+        unsubscribed: true,
+        source: "app",
+        updatedAt: admin.firestore.FieldValue.serverTimestamp(),
+      });
+    } else {
+      await ref.add({
+        email: normalizedEmail,
+        unsubscribed: true,
+        source: "app",
+        createdAt: admin.firestore.FieldValue.serverTimestamp(),
+      });
+    }
+  }
+
+  return orderMasterId;
+}
 
 /**
  * Save or update customer info in Firestore
@@ -197,6 +220,8 @@ export async function createNewOrder(purchaseData: orderDataType) {
  * @param email - Customer email address
  * @param marketingConsent - Boolean (true if allowed to send marketing)
  */
+
+
 export async function marketingData({
   name,
   userId,
@@ -205,44 +230,44 @@ export async function marketingData({
   noOfferEmails,
 }: {
   name: string;
-  userId: string;
-  addressId:string;
+  userId: string | undefined;
+  addressId: string;
   email: string;
   noOfferEmails: boolean;
 }) {
   console.log("this is inside marketing data");
-  // Use serverTimestamp for updatedAt
-  const now = new Date();
 
-  // Convert current German time to Firestore Timestamp
+  // Get current German time
+  const now = new Date();
   const germanDateStr = now.toLocaleString("en-DE", {
     timeZone: "Europe/Berlin",
   });
-
   const germanDate = new Date(germanDateStr);
 
-  await setDoc(
-    doc(db, "customerRecentOrder", userId),
+  const docRef = adminDb.collection("customerRecentOrder").doc(userId!);
+
+  await docRef.set(
     {
       name,
       email,
       userId,
       addressId,
       noOfferEmails,
-      lastOrderDate: serverTimestamp(), // Always use server time for tracking updates
-      updatedAt: Timestamp.fromDate(germanDate), // Easily comparable in Firestore
+      lastOrderDate: admin.firestore.FieldValue.serverTimestamp(),
+      updatedAt: admin.firestore.FieldValue.serverTimestamp(),
     },
-    { merge: true } // Will update if document already exists
+    { merge: true }
   );
 }
 
+
 export async function updateOrderMaster(id: string, status: string) {
   try {
-    const docRef = doc(db, "orderMaster", id);
-    await updateDoc(docRef, { status });
+    const docRef = adminDb.collection("orderMaster").doc(id);
+    await docRef.update({ status });
     console.log("Document updated successfully!");
   } catch (error) {
-    console.log("error", error);
+    console.error("❌ Failed to update orderMaster:", error);
     return { errors: "Cannot update" };
   }
 }
@@ -258,79 +283,113 @@ export async function addProductDraft(
     price: element.price,
     quantity: element.quantity,
     orderMasterId,
-    //purchaseSession: element.purchaseSession,
     userId: userAddedId,
-    //  status: element.status,
   };
-  // console.log("UserAddedId in add products ----",  product)
+
   try {
-    const docRef = await addDoc(collection(db, "orderProducts"), product);
-    console.log("purchased product document written with ID: ", docRef.id);
-    // Clear the form
+    const docRef = await adminDb.collection("orderProducts").add(product);
+    console.log("Purchased product document written with ID: ", docRef.id);
   } catch (e) {
     console.error("Error adding document: ", e);
   }
 }
+
 
 export async function addOrderToMaster(element: orderMasterDataT) {
-  let userDocRef = "" as string;
-  let recordId = undefined;
   try {
-    userDocRef = (await addDoc(collection(db, "orderMaster"), element)).id;
-    recordId = userDocRef;
-    return userDocRef;
-    // Clear the form
+    const docRef = await adminDb.collection("orderMaster").add(element);
+    return docRef.id;
   } catch (e) {
     console.error("Error adding document: ", e);
+    return null;
   }
-
-  // try {
-  //   const docRef = await addDoc(collection(db, "orderMaster"), element1);
-  //   console.log("Document written with ID: ", docRef.id);
-  //   return docRef.id;
-  //   // Clear the form
-  // } catch (e) {
-  //   console.error("Error adding document: ", e);
-  // }
 }
 
-// export async function fetchOrdersMaster(): Promise<orderMasterDataT[]> {
-//   const data = [] as orderMasterDataT[];
-//   //  const q = query(collection(db, "orderMaster"));
-//   //  const querySnapshot = await getDocs(q);
 
-//   const collectionRef = collection(db, "orderMaster");
+export async function fetchOrdersPaginated({
+  afterId,
+  pageSize = 10,
+}: FetchOrdersOptions) {
+  const collectionRef = adminDb.collection("orderMaster");
 
-//   const targetQuery = query(collectionRef, orderBy("srno", "desc"), limit(20));
-//   const querySnapshot = await getDocs(targetQuery);
+  let queryRef;
 
-//   querySnapshot.forEach((doc) => {
-//     const pData = { id: doc.id, ...doc.data() } as orderMasterDataT;
-//     data.push(pData);
-//   });
-//   return data;
-// }
+  if (afterId) {
+    const docRef = await collectionRef.doc(afterId).get();
+    queryRef = collectionRef
+      .orderBy("createdAt", "desc")
+      .startAfter(docRef)
+      .limit(pageSize);
+  } else {
+    queryRef = collectionRef.orderBy("createdAt", "desc").limit(pageSize);
+  }
+
+  const snapshot = await queryRef.get();
+
+  const orders = snapshot.docs.map((doc) => {
+    const data = doc.data();
+    const date = data.createdAt?.toDate?.();
+    const formattedDate = date?.toLocaleString("en-GB", {
+      year: "numeric",
+      month: "long",
+      day: "2-digit",
+      hour: "2-digit",
+      minute: "2-digit",
+    });
+
+//     const dateObj =
+//     typeof data.createdAt === "object" && data.createdAt?.toDate
+//     ? data.createdAt.toDate()
+//     : data.createdAt
+//     ? new Date(data.createdAt)
+//     : null;
+// const createdAtISO = dateObj?.toISOString() || data.createdAtUTC || "";
 
 
 
-type orderMasterDataSafeT = Omit<orderMasterDataT, "createdAt"> & {
-  createdAt: string; // ISO string
-};
+    return {
+      id: doc.id,
+      customerName: data.customerName || "",
+      email: data.email || "",
+      paymentType: data.paymentType || "",
+      status: data.status || "",
+      couponCode: data.couponCode || "",
+      userId: data.userId || "",
+      addressId: data.addressId || "",
+      endTotalG: data.endTotalG || 0,
+      itemTotal: data.itemTotal || 0,
+      totalDiscountG: data.totalDiscountG || 0,
+      flatDiscount: data.flatDiscount || 0,
+      srno: data.srno || 0,
+      timeId: data.timeId || "",
+      deliveryCost: data.deliveryCost || 0,
+      calculatedPickUpDiscountL: data.calculatedPickUpDiscountL || 0,
+      calCouponDiscount: data.calCouponDiscount || 0,
+      couponDiscountPercentL: data.couponDiscountPercentL || 0,
+      pickUpDiscountPercentL: data.pickUpDiscountPercentL || 0,
+      createdAt: data.createdAt?.toDate?.().toISOString() || "",
+      createdAtUTC: data.createdAtUTC || "", // ✅ Add support
+      time: data.time || "",
+    } as orderMasterDataT;
+  });
+
+  const lastDoc = snapshot.docs[snapshot.docs.length - 1];
+  return { orders, lastId: lastDoc?.id || null };
+}
 
 export async function fetchOrdersMaster(): Promise<orderMasterDataSafeT[]> {
   const data: orderMasterDataSafeT[] = [];
 
-  const collectionRef = collection(db, "orderMaster");
-  const targetQuery = query(collectionRef, orderBy("srno", "desc"), limit(20));
-  const querySnapshot = await getDocs(targetQuery);
+  const collectionRef = adminDb.collection("orderMaster");
+  const querySnapshot = await collectionRef.orderBy("srno", "desc").limit(20).get();
 
   querySnapshot.forEach((doc) => {
     const raw = doc.data() as orderMasterDataT;
 
     const createdAtStr =
-      raw.createdAt instanceof Timestamp
+      raw.createdAt instanceof admin.firestore.Timestamp
         ? raw.createdAt.toDate().toISOString()
-        : new Date().toISOString(); // fallback
+        : new Date().toISOString(); // fallback if somehow it's not a Timestamp
 
     const pData: orderMasterDataSafeT = {
       ...raw,
@@ -343,44 +402,190 @@ export async function fetchOrdersMaster(): Promise<orderMasterDataSafeT[]> {
 
   return data;
 }
+// export async function fetchOrdersMaster(): Promise<orderMasterDataSafeT[]> {
+//   const data: orderMasterDataSafeT[] = [];
+
+//   const collectionRef = adminDb.collection("orderMaster");
+//   const querySnapshot = await collectionRef
+//     .orderBy("srno", "desc")
+//     .limit(20)
+//     .get();
+
+//   querySnapshot.forEach((doc) => {
+//     const raw = doc.data() as orderMasterDataT;
+
+//     const createdAtStr =
+//       raw.createdAt?.toDate?.() instanceof Date
+//         ? raw.createdAt.toDate().toISOString()
+//         : new Date().toISOString(); // fallback
+
+//     const pData: orderMasterDataSafeT = {
+//       ...raw,
+//       id: doc.id,
+//       createdAt: createdAtStr,
+//     };
+
+//     data.push(pData);
+//   });
+
+//   return data;
+// }
+
 
 
 export async function deleteOrderMasterRec(id: string) {
-  const docRef = doc(db, "orderMaster", id);
-  await deleteDoc(docRef);
+  const docRef = adminDb.collection("orderMaster").doc(id);
+
+  await docRef.delete();
 
   return {
-    message: { sucess: "Order Deleted" },
+    message: { success: "Order Deleted" },
   };
-  // }else{
-  //   return {errors:"Somthing went wrong, can not delete product"}
-  // }
 }
 
 export async function fetchOrdersMasterByUserId(
   userId: string
 ): Promise<Array<TOrderMaster>> {
-  //  const q = query(collection(db, "orderMaster"), where("userId", "==", userId));
-  // const querySnapshot = await getDocs(q);
-  //  let data = [];
-  //  querySnapshot.forEach((doc) => {
-  //    data.push({id:doc.id, ...doc.data()});
-  //  });
-  //  return data;
+  const data: TOrderMaster[] = [];
 
-  let data = [] as orderMasterDataT[];
+  const snapshot = await adminDb
+    .collection("orderMaster")
+    .where("userId", "==", userId)
+    .get();
 
-  const q = query(collection(db, "orderMaster"), where("userId", "==", userId));
-  const querySnapshot = await getDocs(q);
-  querySnapshot.forEach((doc) => {
-    data = doc.data() as orderMasterDataT[];
+  snapshot.forEach((doc) => {
+    data.push({
+      id: doc.id,
+      ...doc.data(),
+    } as TOrderMaster);
   });
+
   return data;
 }
 
+
+
+
+export async function fetchOrderMasterById(id: string) {
+  const docSnap = await adminDb.collection("orderMaster").doc(id).get();
+
+  if (!docSnap.exists) {
+    console.log("No such document!");
+    return null;
+  }
+
+  const raw = docSnap.data() as orderMasterDataT;
+
+  // const createdAtStr =
+  //   raw.createdAt?.toDate?.().toISOString?.() ?? new Date().toISOString();
+
+
+   const createdAtStr =
+    raw.createdAt instanceof Timestamp
+      ? raw.createdAt.toDate().toISOString()
+      : new Date().toISOString();  
+
+  return {
+    ...raw,
+    createdAt: createdAtStr,
+    id: docSnap.id,
+  } as orderMasterDataSafeT;
+}
+
+
+/***************** Order detail  **************************/
+
+export async function fetchOrderProductsByOrderMasterId(OrderMasterId: string) {
+  const data: orderProductsT[] = [];
+
+  const snapshot = await adminDb
+    .collection("orderProducts")
+    .where("orderMasterId", "==", OrderMasterId)
+    .get();
+
+  snapshot.forEach((doc) => {
+    data.push(doc.data() as orderProductsT);
+  });
+
+  return data;
+}
+
+
+
+
+
+
+// const ORDERS_PER_PAGE = 10;
+
+// export async function fetchOrdersMaster1(cursorId: string | null = null) {
+//   const collectionRef = collection(adminDb, "orderMaster");
+
+//   let q;
+//   if (cursorId) {
+//     const cursorDoc = await getDoc(doc(collectionRef, cursorId));
+//     if (cursorDoc.exists()) {
+//       q = query(
+//         collectionRef,
+//         orderBy("createdAt", "desc"),
+//         startAfter(cursorDoc),
+//         limit(ORDERS_PER_PAGE)
+//       );
+//     } else {
+//       throw new Error("Cursor document not found");
+//     }
+//   } else {
+//     q = query(collectionRef, orderBy("createdAt", "desc"), limit(ORDERS_PER_PAGE));
+//   }
+
+//   const snapshot = await getDocs(q);
+
+//   const orders: orderMasterDataT[] = snapshot.docs.map((doc) => {
+//     const data = doc.data();
+//     const date = data.createdAt?.toDate?.();
+//     const formattedDate = date?.toLocaleString("en-GB", {
+//       year: "numeric",
+//       month: "long",
+//       day: "2-digit",
+//       hour: "2-digit",
+//       minute: "2-digit",
+//     });
+
+//     return {
+//       id: doc.id,
+//       customerName: data.customerName || "",
+//       email: data.email || "",
+//       paymentType: data.paymentType || "",
+//       status: data.status || "",
+//       time: formattedDate || "",
+//       couponCode: data.couponCode || "",
+//       userId: data.userId || "",
+//       addressId: data.addressId || "",
+//       endTotalG: data.endTotalG || 0,
+//       itemTotal: data.itemTotal || 0,
+//       totalDiscountG: data.totalDiscountG || 0,
+//       flatDiscount: data.flatDiscount || 0,
+//       srno: data.srno || 0,
+//       timeId: data.timeId || "",
+//       deliveryCost: data.deliveryCost || 0,
+//       calculatedPickUpDiscountL: data.calculatedPickUpDiscountL || 0,
+//       calCouponDiscount: data.calCouponDiscount || 0,
+//       couponDiscountPercentL: data.couponDiscountPercentL || 0,
+//       pickUpDiscountPercentL: data.pickUpDiscountPercentL || 0,
+//       createdAt: data.createdAt,
+//     } as orderMasterDataT;
+//   });
+
+//   return {
+//     orders,
+//     firstDocId: snapshot.docs[0]?.id || null,
+//     lastDocId: snapshot.docs[snapshot.docs.length - 1]?.id || null,
+//   };
+// }
+
+
 // export async function addOrder(element) {
 //   try {
-//     const docRef = await addDoc(collection(db, "orderProducts"), element);
+//     const docRef = await addDoc(collection(adminDb, "orderProducts"), element);
 //     console.log("Document written with ID: ", docRef.id);
 //     // Clear the form
 //   } catch (e) {
@@ -391,7 +596,7 @@ export async function fetchOrdersMasterByUserId(
 // export async function fetchOrders(){
 
 //  // const result = await db.select().from(product);
-//   const result = await getDocs(collection(db, "product"))
+//   const result = await getDocs(collection(adminDb, "product"))
 // //  console.log(result.docs)
 
 // let data;
@@ -403,35 +608,77 @@ export async function fetchOrdersMasterByUserId(
 //   return data;
 // }
 
-export async function fetchOrderMasterById(id: string) {
-  console.log("Document data:--------");
-  const docRef = doc(db, "orderMaster", id);
-  const docSnap = await getDoc(docRef);
-  let productData = {} as orderMasterDataT;
-  if (docSnap.exists()) {
-    console.log("Document data:", docSnap.data());
-  } else {
-    //   docSnap.data() //will be undefined in this case
-    console.log("No such document!");
-  }
-  productData = docSnap.data() as orderMasterDataT;
-  return productData;
-}
 
-/***************** Order detail  **************************/
+// export async function fetchOrdersPaginated1({ afterId, pageSize = 10 }: FetchOrdersOptions) {
+//   const collectionRef = collection(adminDb, 'orderMaster');
+//   let q;
 
-export async function fetchOrderProductsByOrderMasterId(OrderMasterId: string) {
-  //console.log("---------- inside order -----------", OrderMasterId)
-  const data = [] as orderProductsT[];
-  const q = query(
-    collection(db, "orderProducts"),
-    where("orderMasterId", "==", OrderMasterId)
-  );
-  const querySnapshot = await getDocs(q);
-  querySnapshot.forEach((doc) => {
-    const orderData = doc.data() as orderProductsT;
-    data.push(orderData);
-  });
-  // console.log(data)
-  return data;
-}
+//   if (afterId) {
+//     const docRef = await getDoc(doc(adminDb, 'orderMaster', afterId));
+//     q = query(collectionRef, orderBy('createdAt', 'desc'), startAfter(docRef), limit(pageSize));
+//   } else {
+//     q = query(collectionRef, orderBy('createdAt', 'desc'), limit(pageSize));
+//   }
+
+//   const snapshot = await getDocs(q);
+
+//   const orders = snapshot.docs.map((doc) => {
+    
+//     const data = doc.data();
+//     const date = data.createdAt?.toDate?.();
+//     const formattedDate = date?.toLocaleString('en-GB', {
+//       year: 'numeric',
+//       month: 'long',
+//       day: '2-digit',
+//       hour: '2-digit',
+//       minute: '2-digit',
+//     });
+
+//     return {
+//       id: doc.id,
+//       customerName: data.customerName || '',
+//       email: data.email || '',
+//       paymentType: data.paymentType || '',
+//       status: data.status || '',
+//       time: data.time || '',
+//       couponCode: data.couponCode || '',
+//       userId: data.userId || '',
+//       addressId: data.addressId || '',
+//       endTotalG: data.endTotalG || 0,
+//       itemTotal: data.itemTotal || 0,
+//       totalDiscountG: data.totalDiscountG || 0,
+//       flatDiscount: data.flatDiscount || 0,
+//       srno: data.srno || 0,
+//       timeId: data.timeId || '',
+//       deliveryCost: data.deliveryCost || 0,
+//       calculatedPickUpDiscountL: data.calculatedPickUpDiscountL || 0,
+//       calCouponDiscount: data.calCouponDiscount || 0,
+//       couponDiscountPercentL: data.couponDiscountPercentL || 0,
+//       pickUpDiscountPercentL: data.pickUpDiscountPercentL || 0,
+//       createdAt: data.createdAt?.toDate?.().toISOString() || '',
+//     } as orderMasterDataT;
+//   });
+
+//   const lastDoc = snapshot.docs[snapshot.docs.length - 1];
+//   return { orders, lastId: lastDoc?.id || null };
+// }
+
+
+
+// export async function fetchOrdersMaster(): Promise<orderMasterDataT[]> {
+//   const data = [] as orderMasterDataT[];
+//   //  const q = query(collection(adminadminDb, "orderMaster"));
+//   //  const querySnapshot = await getDocs(q);
+
+//   const collectionRef = collection(adminadminDb, "orderMaster");
+
+//   const targetQuery = query(collectionRef, orderBy("srno", "desc"), limit(20));
+//   const querySnapshot = await getDocs(targetQuery);
+
+//   querySnapshot.forEach((doc) => {
+//     const pData = { id: doc.id, ...doc.data() } as orderMasterDataT;
+//     data.push(pData);
+//   });
+//   return data;
+// }
+

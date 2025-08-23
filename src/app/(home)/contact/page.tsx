@@ -7,7 +7,7 @@ export default function Contact() {
       <div className="flex flex-col gap-8 md:flex-row my-24 justify-between">
         {/* Address Section */}
         <div className=" flex flex-col">
-          <h1 className="text-[#333] text-[3rem]">Athenas Grill</h1>
+          <h1 className="text-[#333] text-[3rem]">Masala Taste of India</h1>
           <div className="w-full md:w-[50%] space-y-3 text-lg">
             <a className="relative mb-5 block aspect-square w-20" href="/de">
               <img
@@ -38,12 +38,12 @@ export default function Contact() {
             </a>
             <a
               className="flex items-center justify-start"
-              title="info@athenasgrill.de"
-              href="mailto:info@athenasgrill.de"
+              title="info@masala-gf.de"
+              href="mailto:info@masala-gf.de"
               target="_blank"
               rel="noreferrer"
             >
-              ✉️ info@athenasgrill.de
+              ✉️ info@masala-gf.de
             </a>
           </div>
         </div>

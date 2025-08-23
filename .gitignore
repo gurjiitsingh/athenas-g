@@ -19,9 +19,10 @@
 # next.js
 /.next/
 /out/
-
+/firebase-service-account.json
 # production
 /build
+/firebase-service-account.json
 
 # misc
 .DS_Store

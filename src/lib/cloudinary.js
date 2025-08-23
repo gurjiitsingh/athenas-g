@@ -12,6 +12,8 @@ if (!process.env.CLOUDINARY_API_SECRET) {
   throw new Error('CLOUDINARY_API_SECRET is not set');
 }
 
+const folder = process.env.CLOUDINARY_FOLDER || 'masala-food';
+
 cloudinary.config({
   cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
   api_key: process.env.CLOUDINARY_API_KEY,
@@ -25,8 +27,9 @@ export async function upload(image) {
   const base64Data = Buffer.from(imageData).toString('base64');
   const fileUri = 'data:' + mime + ';' + encoding + ',' + base64Data;
   const result = await cloudinary.uploader.upload(fileUri, {
-    folder: 'Athenas-Grill-food',
+    folder,
   });
+
   return result.secure_url;
 }
 
@@ -55,6 +58,26 @@ export async function deleteImage(public_id){// not tested just try
 //     console.log(result, error) });
 cloudinary.uploader.destroy(public_id, function(error,result) {console.log(error); console.log(result) });
  }
+
+
+
+
+
+
+//  export async function deleteOldImage(oldImgageUrl){
+
+//     const imageUrlArray = oldImgageUrl.split('/');
+//     console.log(imageUrlArray[imageUrlArray.length-1])
+//     const imageName = imageUrlArray[imageUrlArray.length-2]+"/"+imageUrlArray[imageUrlArray.length-1]
+ 
+//     const image_public_id = imageName.split('.')[0] 
+//     try {
+//       let deleteResult = await deleteImage(image_public_id);
+//       console.log("image delete data", deleteResult);
+//    } catch (error) {
+//     console.log(error)
+//    }
+//    }
 
 
 

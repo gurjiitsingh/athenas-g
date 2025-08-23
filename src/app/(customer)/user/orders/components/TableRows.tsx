@@ -32,7 +32,7 @@ function TableRows({ order }:{order:TOrderMaster}){
       <TableCell>{order.time}</TableCell>
       <TableCell>completed</TableCell>
         <TableCell>$25</TableCell>
-      <TableCell>athenasgrill.de</TableCell>
+      <TableCell>masala-bs.de</TableCell>
      </TableRow>
   );
 };

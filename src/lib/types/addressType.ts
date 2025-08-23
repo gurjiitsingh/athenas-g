@@ -1,4 +1,4 @@
-import { z } from "zod";
+import { string, z } from "zod";
 
 export type addressT = {
     name: string;
@@ -68,6 +68,7 @@ export const emailZ = z.object({
 export type TemailZ = z.infer<typeof emailZ>;
 
 export type TaddressCheckout ={
+  id?:string;
   firstName:string;
     lastName:string;
     password?:string;
@@ -82,29 +83,40 @@ export type TaddressCheckout ={
     }
 
 
-    export type addressResT ={
-      email:string;
-      firstName:string;
-      lastName:string;
-     // userId:string;
-      mobNo:string;
-      addressLine1:string;
-      addressLine2:string;
-      city:string;
-      state:string;
-      zipCode:string;
-    } 
+export type addressResT = { 
+  
+  id?: string;
+  email: string;
+  firstName: string;
+  lastName: string;
+  userId: string;
+  mobNo: string;
+  addressLine1: string;
+  addressLine2: string;
+  city: string;
+  state: string;
+  zipCode: string;
+  createdAt?: Timestamp | string;
+};
 
-    export type addressResType ={
-      id:string;
-      email:string;
-      firstName:string;
-      lastName:string;
-      userId:string;
-      mobNo:string;
-      addressLine1:string;
-      addressLine2:string;
-      city:string;
-      state:string;
-      zipCode:string;
-    } 
+export type addressWithId = Omit<addressResT, "createdAt"> & {
+  createdAt: string;
+  id: string;
+};
+
+   import { Timestamp } from 'firebase/firestore';
+
+export type addressResType = {
+  id: string;
+  email: string;
+  firstName: string;
+  lastName: string;
+  userId: string;
+  mobNo: string;
+  addressLine1: string;
+  addressLine2: string;
+  city: string;
+  state: string;
+  zipCode: string;
+  createdAt?: Timestamp; // optional Firestore server timestamp
+};
