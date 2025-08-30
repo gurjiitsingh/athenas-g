@@ -17,7 +17,7 @@ export const TEXT = {
 
   sections: {
     links: {
-      title: "Links",
+      title: "Quick Links",
       items: [
         { name: "Home", href: "/" },
         { name: "Menu", href: "/" },
@@ -69,7 +69,7 @@ footer_bottom: {
   copyright: {
     prefix: "Copyright ©",
     suffix: "All Rights Reserved by",
-    company: "Masala Taste of India",
+    company: "Athenas Grill",
   },
 },
 

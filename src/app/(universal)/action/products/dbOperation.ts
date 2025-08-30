@@ -473,9 +473,6 @@ export async function fetchProductById(id: string): Promise<ProductType | null> 
 }
 
 
-
-
-
 export async function fetchProducts(): Promise<ProductType[]> {
   
   try {
@@ -485,12 +482,13 @@ export async function fetchProducts(): Promise<ProductType[]> {
       console.warn("No products found in the database.");
       return [];
     }
- 
+
     const products: ProductType[] = snapshot.docs.map((doc) => ({
       id: doc.id,
       ...doc.data(),
     })) as ProductType[];
 
+   
     return products;
   } catch (error) {
     console.error("Failed to fetch products:", error);
@@ -500,7 +498,7 @@ export async function fetchProducts(): Promise<ProductType[]> {
 
 export async function fetchProductByCategoryId(id: string): Promise<ProductType[]> {
  
- 
+ console.log("by id ---------------")
   try {
     const querySnapshot = await adminDb
       .collection("products")

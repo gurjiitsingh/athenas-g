@@ -4,7 +4,7 @@
 import Products from "@/components/level-1/Products";
 import CategorySlider from "@/components/level-1/CategorySlider";
 import { useLanguage } from "@/store/LanguageContext";
-import Hero from "@/components/level-1/Hero";
+import Hero from "@/custom/cus-components/Hero";
 
 //import { TnewProductSchema } from '@/lib/types';
 // import {  TnewProductSchema } from '@/lib/type/productType';
@@ -22,7 +22,7 @@ export default function Page() {
 
   return (
     <>
-      <div className="relative min-h-screen px-3 md:px-0 pb-6 mt-10">
+      <div className="relative min-h-screen px-3 md:px-0 pb-6 mt-3">
       
         {/* Foreground Content */}
         <div className="relative z-10">

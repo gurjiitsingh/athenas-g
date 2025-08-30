@@ -19,7 +19,7 @@ export const TEXT = {
 
 sections: {
   links: {
-    title: "Links",
+    title: "Quick Links",
     items: [
       { name: "Startseite", href: "/" },
       { name: "Speisekarte", href: "/" },
@@ -74,7 +74,7 @@ footer_bottom: {
   copyright: {
     prefix: "Copyright ©",
     suffix: "Alle Rechte vorbehalten von",
-    company: "Masala Taste of India",
+    company: "Athenas Grill",
   },
 },
 
@@ -135,7 +135,7 @@ orderCancel: {
   payment_method_cod: "Barzahlung bei Lieferung",
   
   // Search section
-  search_dish_or_category: "Gericht suchen oder Kategorie auswählen",
+  search_dish_or_category: "Speisen durchsuchen",
 
   // Mini cart sidebar
   cart_sidebar_title: "Dein Warenkorb",

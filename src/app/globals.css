@@ -195,7 +195,7 @@ button:disabled {
 
 /* === Layout Colors === */
 .layout-bg {
-  @apply bg-[#cb9d80] md:bg-[#cb9d80];
+  @apply bg-[#d4eebe];
 }
 
 /* === Toast Styles === */
@@ -229,7 +229,7 @@ button:disabled {
 
 /* === Hero Text === */
 .hero-heading {
-  @apply text-3xl w-fit my-2 text-emerald-900;
+  @apply text-3xl w-fit my-2 text-slate-500;
 }
 
 .hero-subtext {
@@ -237,7 +237,7 @@ button:disabled {
 }
 
 .hero-delivery-note {
-  @apply py-2  text-slate-600 w-fit h-fit font-semibold rounded-xl mb-2;
+  @apply p-2 bg-amber-200 text-sky-600 w-fit h-fit font-semibold rounded-xl mb-2;
 }
 
 .hero-disclaimer {
@@ -250,8 +250,9 @@ button:disabled {
 /* Nav bar */
 
 .header-bg {
-  @apply bg-[#eba363]
+  @apply bg-[#eba363];
 }
+
 .navbar-link-top {
   @apply text-slate-700;
 }
@@ -279,7 +280,7 @@ button:disabled {
 
 /* Footer background colors */
 .footer-bg-primary {
-  @apply bg-[#eba363]; /* Original: #FADB5E */
+  @apply bg-[#eba363]  text-slate-50; /* Original: #FADB5E */
 }
 
 .footer-bg-bottom {
@@ -306,7 +307,7 @@ button:disabled {
 
 /* Border bottom for list items */
 .footer-item-border {
-  @apply border-b border-slate-400;
+  /* @apply border-b border-slate-400; */
 }
 
 
