@@ -53,7 +53,7 @@ export default function UnsubscribePage() {
           <p className="text-sm text-gray-500">
             If this was a mistake, contact us at{' '}
             <a href="mailto:info@masala-gf.de" className="underline">
-              info@masala-gf.de
+              info@masala-bs.de
             </a>.
           </p>
         </div>

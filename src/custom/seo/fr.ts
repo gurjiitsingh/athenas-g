@@ -1,25 +1,102 @@
-
 export const SEO = {
-  title: "Masala – Indian Restaurant in Gifhorn, Lower Saxony",
+    title: "Athenas Grill – Athenas Restaurant inSteinbrink 26, 38122 Braunschweig-Broitzem",
   description:
-    "Authentic Indian food at Masala Gifhorn. Order online for delivery or visit us in Lower Saxony.",
+    "Authentic Athenas food at Athenas Grill Braunschweig-Broitzem. Order online for delivery or visit us in Braunschweig-Broitzem.",
 };
+
 
 
 export const BRANDING = {
   home_page_offer: "",
   offer_instruction: "",
-  delivery_note: "La livraison est également disponible.",
-  home_page_disclaimer: "Le plat peut différer de l’image.",
-  brand: "Masala",
-  tag_line: "Goût de l'Inde",
-  brand_name: "Masala Goût de l'Inde",
+  delivery_note: "Delivery is also available.",
+  home_page_disclaimer: "",//"Food may differ from image.",
+  brand: "Athenas Grill",
+  tag_line: "Taste of Athenas",
+  brand_name: "Athenas Grill Taste of Athenas",
+   poweredBy: "Powered by",
+    poweredByUrl: "http://www.gstadeveloper.com",
+    copyright: {
+      prefix: "Copyright ©",
+      suffix: "All Rights Reserved by",
+      company: "Athenas Grill Taste of Athenas"},
 
-   poweredBy: "Propulsé par",
-  poweredByUrl: "https://www.gstadeveloper.com",
+
+      
+  footer_bottom: {
+  poweredBy: "Powered by",
+  poweredByUrl: "http://www.gstadeveloper.com",
   copyright: {
-    prefix: "Droits d'auteur ©",
-    suffix: "Tous droits réservés par",
-    company: "Masala Taste of India",
+    prefix: "Copyright ©",
+    suffix: "All Rights Reserved by",
+    company: "Athenas Grill",
   },
+},
+
+
+  order_complete_heading: "Your order is complete",
+  pickup_time: "Pickup: 20–25 minutes",
+  delivery_time: "Delivery time: 40–55 minutes",
+
+
+  //admin sidebar
+  sidebar: {
+  home: "Home",
+  orders: "Orders",
+  orders_realtime: "Orders Realtime",
+  sale: "Sale",
+  reservations: "Reservations",
+  categories: "Categories",
+  pickup_discount: "Pickup Discount",
+  products: "Products",
+  variants: "Variants",
+  coupon: "Coupon",
+  delivery: "Delivery",
+  users: "Users",
+  setting: "Setting",
+  data_backup: "Data Backup",
+  logout: "Logout",
+},
+  
+  menu_list: [
+    { name: "Home", link: "/" },
+    { name: "About Us", link: "/about" },
+    { name: "Contact", link: "/contact" },
+    { name: "Table Reservation", link: "/reservation" },
+  ],
+
+  menu: [
+    { name: "Home", link: "/" },
+    { name: "About Us", link: "/about" },
+    { name: "Contact", link: "/contact" },
+    { name: "Table Reservation", link: "/reservation" },
+  ],
+
+  sections: {
+    links: {
+      title: "Quick Links",
+      items: [
+        { name: "Home", href: "/" },
+        { name: "Menu", href: "/" },
+        { name: "About", href: "/about" },
+        { name: "Contact", href: "/contact" },
+        { name: "Reservation", href: "/reservation" },
+        { name: "Allergens", href: "/allergene" },
+      ],
+    },
+    company: {
+      title: "Company",
+      items: [
+        { name: "Privacy Policy", href: "/privacy" },
+        { name: "Terms of Service", href: "#" },
+      ],
+    },
+    social: {
+      title: "Social media",
+    },
+  },
+
+
+
+
 }
