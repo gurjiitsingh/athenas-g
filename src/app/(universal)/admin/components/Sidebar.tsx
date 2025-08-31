@@ -105,7 +105,7 @@ const menuList: Titem[] = [
             className="flex items-center gap-3 px-4 py-2 w-full text-sm font-medium rounded-md bg-amber-600 text-white hover:bg-rose-700 transition"
           >
             <IoIosLogOut size={20} />
-             {TEXT.sidebar.logout}
+             {BRANDING.sidebar.logout}
           </button>
         </div>
       </div>
